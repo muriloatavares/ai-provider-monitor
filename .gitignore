@@ -1,0 +1,20 @@
+# Dependencies
+node_modules/
+
+# Environment (contém API Keys)
+.env
+
+# Key files (NUNCA subir chaves)
+keys*.txt
+*.keys
+
+# Reports (dados gerados localmente)
+reports/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
