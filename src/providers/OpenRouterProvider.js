@@ -1,6 +1,7 @@
 import BaseProvider from './BaseProvider.js';
 import config from '../config/env.js';
 import tokenTracker from '../utils/tokenTracker.js';
+import providerTracker from '../services/providerTracker.js';
 
 export default class OpenRouterProvider extends BaseProvider {
   constructor(customKey = null) {
@@ -66,8 +67,11 @@ export default class OpenRouterProvider extends BaseProvider {
       const usage = data.usage || {};
       const cost = res.data.usage?.total_cost || 0;
 
-      // Registra no tracker global
+      // Registra no tracker global de tokens
       tokenTracker.track('openrouter', data.model, promptType, usage, cost);
+
+      // Registra no tracker de provedores reais (infraestrutura)
+      providerTracker.track('openrouter', data.model, res.duration, res.ttfb, res.status, res.headers);
 
       return {
         success: true,

@@ -4,6 +4,8 @@
  * totais por provider e um grand total da sessão.
  */
 
+import pricingEngine from '../services/pricingEngine.js';
+
 class TokenTracker {
   constructor() {
     this.records = [];
@@ -11,23 +13,25 @@ class TokenTracker {
   }
 
   /**
-   * Registra uma chamada com seus tokens.
-   * @param {string} provider - Nome do provider (ex: "openrouter", "xai")
-   * @param {string} model - Modelo utilizado
-   * @param {string} promptType - Tipo do prompt ("light", "medium", "auth", etc.)
-   * @param {object} usage - { prompt_tokens, completion_tokens, total_tokens }
-   * @param {number} cost - Custo estimado da chamada
+   * Registra uma chamada com seus tokens e calcula o custo real via PricingEngine.
    */
-  track(provider, model, promptType, usage = {}, cost = 0) {
+  track(provider, model, promptType, usage = {}) {
+    const promptTokens = usage.prompt_tokens || usage.promptTokens || 0;
+    const completionTokens = usage.completion_tokens || usage.completionTokens || 0;
+    const totalTokens = usage.total_tokens || usage.totalTokens || 0;
+    
+    // Auto-calculates cost dynamically
+    const cost = pricingEngine.calculateCost(model, promptTokens, completionTokens);
+
     const entry = {
       timestamp: new Date().toISOString(),
       provider,
       model: model || 'unknown',
       promptType,
-      promptTokens: usage.prompt_tokens || usage.promptTokens || 0,
-      completionTokens: usage.completion_tokens || usage.completionTokens || 0,
-      totalTokens: usage.total_tokens || usage.totalTokens || 0,
-      cost: cost || 0
+      promptTokens,
+      completionTokens,
+      totalTokens,
+      cost
     };
 
     this.records.push(entry);

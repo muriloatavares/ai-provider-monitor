@@ -9,6 +9,7 @@ import { formatCurrency, formatMs } from './utils/formatter.js';
 import { startApi, updateApiState } from './api.js';
 import tokenTracker from './utils/tokenTracker.js';
 import { providers } from './providers/index.js';
+import pricingEngine from './services/pricingEngine.js';
 
 // Map provider keys to their corresponding env config keys
 const providerKeyMap = {
@@ -37,6 +38,9 @@ const main = async () => {
   logger.box('AI PROVIDERS STATUS REPORT');
   
   validateEnv();
+
+  logger.info('Initializing Pricing Engine...');
+  await pricingEngine.updatePricing();
 
   // Start Express API in background
   startApi();
@@ -139,6 +143,7 @@ const main = async () => {
   saveLatest(finalReport);
   saveBenchmark(benchmarkResults);
   saveHistory(finalReport);
+  pricingEngine.exportCosts(tokenTracker.getRecords());
   logger.info('\nReports exported to reports/ directory.');
 };
 

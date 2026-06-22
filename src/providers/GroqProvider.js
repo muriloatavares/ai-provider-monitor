@@ -1,6 +1,7 @@
 import BaseProvider from './BaseProvider.js';
 import config from '../config/env.js';
 import tokenTracker from '../utils/tokenTracker.js';
+import providerTracker from '../services/providerTracker.js';
 
 export default class GroqProvider extends BaseProvider {
   constructor(customKey = null) {
@@ -43,6 +44,9 @@ export default class GroqProvider extends BaseProvider {
 
       // Registra no tracker global
       tokenTracker.track('groq', data.model, promptType, usage, 0);
+
+      // Registra infraestrutura e rate limits
+      providerTracker.track('groq', data.model, res.duration, res.ttfb, res.status, res.headers);
 
       return {
         success: true,

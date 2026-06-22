@@ -11,7 +11,10 @@
     "models": "node src/models.js",
     "uptime": "node src/uptime.js",
     "uptime:once": "node src/uptime.js --once",
-    "uptime:status": "node src/uptime.js --status"
+    "uptime:status": "node src/uptime.js --status",
+    "pricing:update": "node src/services/pricingEngine.js --update",
+    "providers:history": "node src/services/providerTracker.js",
+    "benchmark:stream": "node src/benchmarks/streamingBenchmark.js"
   },
   "dependencies": {
     "axios": "^1.7.0",
