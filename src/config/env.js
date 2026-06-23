@@ -23,9 +23,7 @@ export const validateEnv = () => {
   const present = allKeys.filter(k => k.value).map(k => k.name);
 
   if (present.length === 0) {
-    console.error('No API keys configured. Please set at least one key in your .env file.');
-    console.error(`Missing: ${missing.join(', ')}`);
-    process.exit(1);
+    console.warn('No API keys configured in .env. Starting in Bulk Checker mode.');
   }
 
   if (missing.length > 0) {

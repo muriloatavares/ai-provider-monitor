@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-[#000000] text-[#EDEDED] font-sans antialiased selection:bg-white/20;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #333;
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #333 transparent;
+  }
+}
+
+@layer components {
+  .vercel-card {
+    @apply bg-[#000000] border border-[#333] rounded-lg p-6 hover:border-[#666] transition-colors duration-200;
+  }
+}

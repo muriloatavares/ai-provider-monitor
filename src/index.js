@@ -65,6 +65,8 @@ const main = async () => {
   const activeProviders = getActiveProviders();
   logger.info(`Active providers: ${activeProviders.join(', ')}\n`);
 
+  const benchmarkRanking = [];
+
   for (const provider of activeProviders) {
     const auth = healthResults[provider] || { online: false };
     const balance = balanceResults[provider] || { available: false, credits: 'N/A' };
