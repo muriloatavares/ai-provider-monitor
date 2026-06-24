@@ -6,6 +6,7 @@
 [![React](https://img.shields.io/badge/React-61DAFB?logo=react&logoColor=000)](https://react.dev)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?logo=tailwind-css&logoColor=white)](https://tailwindcss.com)
 [![Vite](https://img.shields.io/badge/Vite-646CFF?logo=vite&logoColor=white)](https://vitejs.dev)
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-FFDD00?logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/muriloatavares)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 Ferramenta profissional de observabilidade e diagnóstico para provedores de IA.  
@@ -123,6 +124,12 @@ Quando você joga o arquivo na tela:
 2. A rota `/api/check-keys-stream` aciona o utilitário `keyDetector` para filtrar apenas as chaves válidas usando regex.
 3. Requisições em streaming via Server-Sent Events (SSE) batem nos endpoints de cada provedor pelo serviço `keyValidator`.
 4. O resultado volta incrementalmente em tempo real para o frontend, construindo a tabela visualmente sem travar a UI!
+
+## Apoie o Projeto
+
+Se esta ferramenta economizou horas de trabalho e ajudou a proteger o seu faturamento validando e filtrando as chaves de sua operação localmente de forma segura, considere me pagar um café!
+
+<a href="https://buymeacoffee.com/muriloatavares" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
 
 ## Licença
 
