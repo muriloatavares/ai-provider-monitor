@@ -1,8 +1,12 @@
 # AI Providers Monitor
 
+[![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&logoColor=000)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
+[![Node.js](https://img.shields.io/badge/Node.js-339933?logo=nodedotjs&logoColor=white)](https://nodejs.org)
+[![Express](https://img.shields.io/badge/Express-000000?logo=express&logoColor=white)](https://expressjs.com)
+[![React](https://img.shields.io/badge/React-61DAFB?logo=react&logoColor=000)](https://react.dev)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?logo=tailwind-css&logoColor=white)](https://tailwindcss.com)
+[![Vite](https://img.shields.io/badge/Vite-646CFF?logo=vite&logoColor=white)](https://vitejs.dev)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Node.js Version](https://img.shields.io/badge/node-%3E%3D%2020.0.0-brightgreen.svg)](https://nodejs.org)
-[![React](https://img.shields.io/badge/React-18-blue.svg)](https://reactjs.org/)
 
 Ferramenta profissional de observabilidade e diagnóstico para provedores de IA.  
 Possui um **Dashboard Web** elegante para validação em massa (Bulk Checker) de chaves, permitindo verificar conectividade, saldo, uso de rate limits e modelos disponíveis.
@@ -42,8 +46,8 @@ A arquitetura é extensível — novos provedores podem ser adicionados no backe
 ## Instalação
 
 ```bash
-git clone <repo>
-cd Checker
+git clone https://github.com/muriloatavares/ai-provider-monitor.git
+cd ai-provider-monitor
 npm install
 cd dashboard
 npm install
@@ -75,22 +79,29 @@ Arraste e solte um arquivo `.txt` contendo as chaves na área indicada. As chave
 
 ---
 
-## Estrutura do Projeto
+## Estrutura do Projeto (Arquitetura Local-First)
 
 ```
 /
 ├── src/
-│   ├── api.js                # Servidor Backend (Express) c/ lógica de validação
-│   ├── config/env.js         # Configurações globais
-│   └── index.js              # Inicializador backend
+│   ├── api.js                # Servidor Backend (Express) focado apenas em roteamento
+│   ├── index.js              # Inicializador principal (CLI e orquestrador)
+│   ├── providers/            # Conectores para LLMs (OpenRouter, Groq, xAI...)
+│   ├── services/             # Lógica de negócio (keyValidator, pricingEngine, etc)
+│   ├── utils/                # Utilitários (logger, formatter, keyDetector)
+│   ├── constants/            # Mapeamentos padronizados
+│   └── config/env.js         # Validação de variáveis de ambiente
 ├── dashboard/                # Frontend React + Vite
 │   ├── src/
-│   │   ├── pages/Dashboard.jsx      # Tabela principal e Lógica UI
-│   │   ├── components/Badges.jsx    # UI components de status
-│   │   ├── App.jsx
-│   │   └── index.css                # Estilos base Tailwind + scrollbar custom
+│   │   ├── contexts/         # Context API (ThemeContext para Dark Mode)
+│   │   ├── hooks/            # Hooks de lógica e state (useKeyChecker)
+│   │   ├── pages/            # Páginas principais (Dashboard agregador)
+│   │   ├── components/       # Componentes modulares (DropZone, KeyRow, ResultsTable)
+│   │   ├── layouts/          # Estruturas base (MainLayout com Navbar)
+│   │   ├── App.jsx           # Roteamento Frontend
+│   │   └── index.css         # Estilos globais
 │   ├── tailwind.config.js
-│   └── vite.config.js        # Config c/ Proxy p/ contornar CORS
+│   └── vite.config.js        # Config c/ Proxy para /api
 ├── package.json              # Dependências do Backend
 ├── deploy.bat                # Pipeline de Deploy Automatizado CI/CD
 └── README.md
@@ -108,10 +119,10 @@ O repositório possui um utilitário nativo de Deploy projetado para agilizar a 
 
 Você só precisa ter um ou mais arquivos de texto (`.txt`) com várias linhas misturadas contendo chaves, textos aleatórios, lixo etc.
 Quando você joga o arquivo na tela:
-1. O React lê o texto e envia para a API.
-2. A rota `/api/check-keys` roda as Expressões Regulares de cada provedor filtrando os lixos.
-3. Requisições concorrentes (`Promise.all`) batem nos endpoints de validação de cada provedor para coletar Headers (rate limits) e Body (auth / models).
-4. O resultado volta sumarizado para o front!
+1. O React (via `useKeyChecker`) lê o texto e envia para a API.
+2. A rota `/api/check-keys-stream` aciona o utilitário `keyDetector` para filtrar apenas as chaves válidas usando regex.
+3. Requisições em streaming via Server-Sent Events (SSE) batem nos endpoints de cada provedor pelo serviço `keyValidator`.
+4. O resultado volta incrementalmente em tempo real para o frontend, construindo a tabela visualmente sem travar a UI!
 
 ## Licença
 
