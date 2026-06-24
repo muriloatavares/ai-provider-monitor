@@ -41,14 +41,14 @@ export default class OpenRouterProvider extends BaseProvider {
       return {
         available: true,
         credits: remaining,
-        limit: limit ?? 'unlimited',
+        limit: limit ?? 'unknown',
         usage,
         isFreeTier,
         rateLimit,
         // Human-friendly summary for display
         summary: remaining !== null 
           ? `$${remaining.toFixed(4)} remaining (used $${usage.toFixed(4)} of $${limit.toFixed(4)})`
-          : `$${usage.toFixed(4)} used (no limit set)`
+          : `$${usage.toFixed(4)} used (limits unknown)`
       };
     } catch (error) {
       return { available: false, error: error.message };

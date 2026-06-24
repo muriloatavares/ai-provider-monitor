@@ -23,7 +23,7 @@ A arquitetura é extensível — novos provedores podem ser adicionados no backe
   - 🟢 **Online**: Chave válida e com saldo.
   - 🟡 **Exhausted**: Chave válida, mas com limite de gastos estourado.
   - 🔵 **Free Tier**: Chave válida, atrelada a conta gratuita.
-  - 🟣 **No Limit Set**: Chave válida sem teto de gastos configurado.
+  - 🟣 **Unknown Limits**: Chave válida, porém não fornece dados de quota.
   - 🔴 **Offline**: Chave revogada/inexistente.
 - **Rate Limits & Usage**: Exibe o consumo atual em dólar, limite de requisições por minuto e tokens restantes.
 - **Lista de Modelos Expansível**: Clicando na linha de cada provedor, veja a lista de todos os modelos (ex: `gpt-4o`, `llama-3`) a que aquela chave tem acesso.

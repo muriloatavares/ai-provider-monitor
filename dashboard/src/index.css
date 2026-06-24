@@ -3,8 +3,34 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    /* Dark Mode (Default) */
+    --bg-primary: #000000;
+    --bg-secondary: #111111;
+    --bg-card: #0A0A0A;
+    --text-primary: #EDEDED;
+    --text-secondary: #888888;
+    --text-muted: #666666;
+    --border-primary: #333333;
+    --border-secondary: #222222;
+    --hover-bg: #111111;
+  }
+
+  :root.light {
+    /* Light Mode */
+    --bg-primary: #FAFAFA;
+    --bg-secondary: #F0F0F0;
+    --bg-card: #FFFFFF;
+    --text-primary: #171717;
+    --text-secondary: #525252;
+    --text-muted: #737373;
+    --border-primary: #E5E5E5;
+    --border-secondary: #D4D4D4;
+    --hover-bg: #F5F5F5;
+  }
+
   body {
-    @apply bg-[#000000] text-[#EDEDED] font-sans antialiased selection:bg-white/20;
+    @apply bg-[var(--bg-primary)] text-[var(--text-primary)] font-sans antialiased;
   }
 
   /* Custom scrollbar */
@@ -16,21 +42,37 @@
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: #333;
+    background: var(--border-primary);
     border-radius: 3px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #555;
+    background: var(--text-muted);
   }
 
   * {
     scrollbar-width: thin;
-    scrollbar-color: #333 transparent;
+    scrollbar-color: var(--border-primary) transparent;
   }
 }
 
 @layer components {
   .vercel-card {
-    @apply bg-[#000000] border border-[#333] rounded-lg p-6 hover:border-[#666] transition-colors duration-200;
+    @apply bg-[var(--bg-card)] border border-[var(--border-primary)] rounded-lg p-6 hover:border-[var(--border-secondary)] transition-colors duration-200;
   }
+}
+
+/* Animations */
+@keyframes fadeSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.key-row-enter {
+  animation: fadeSlideIn 0.3s ease-out forwards;
 }
