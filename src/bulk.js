@@ -1,3 +1,15 @@
+/**
+ * @file bulk.js
+ * @description Verificador de chaves em massa via linha de comando.
+ *
+ * Lê um arquivo .txt com uma chave por linha, detecta o provider
+ * automaticamente pelo prefixo, e valida cada chave em sequência.
+ *
+ * Uso: npm run bulk -- <path-to-keys-file>
+ *
+ * @author Murilo A. Tavares (muriloatavares)
+ */
+
 import fs from "fs";
 import path from "path";
 import readline from "readline";
@@ -5,23 +17,22 @@ import logger from "./utils/logger.js";
 import OpenRouterProvider from "./providers/OpenRouterProvider.js";
 import XaiProvider from "./providers/XaiProvider.js";
 import GroqProvider from "./providers/GroqProvider.js";
+import { detectProvider } from "./utils/keyDetector.js";
 import { formatCurrency } from "./utils/formatter.js";
 
-// Accept file path as CLI argument, or default to keys.txt
 const KEY_FILE = process.argv[2]
   ? path.resolve(process.argv[2])
   : path.resolve("keys.txt");
 
-const detectProvider = (key) => {
-  if (key.startsWith("sk-or-v1-")) return "openrouter";
-  if (key.startsWith("xai-")) return "xai";
-  if (key.startsWith("gsk_")) return "groq";
-  // Fallback: try as openrouter
-  return "openrouter";
-};
-
-const createProvider = (type, key) => {
-  switch (type) {
+/**
+ * Instancia o provider correto para validação de uma chave individual.
+ *
+ * @param {string} providerType - Tipo do provider (openrouter, xai, groq).
+ * @param {string} key - API key para autenticação.
+ * @returns {import('./providers/BaseProvider.js').default} Instância do provider.
+ */
+const createProvider = (providerType, key) => {
+  switch (providerType) {
     case "openrouter":
       return new OpenRouterProvider(key);
     case "xai":
@@ -51,15 +62,15 @@ const main = async () => {
 
   const keys = [];
   for await (const line of rl) {
-    const key = line.trim();
-    if (key && !key.startsWith("#")) {
-      keys.push(key);
+    const trimmedKey = line.trim();
+    if (trimmedKey && !trimmedKey.startsWith("#")) {
+      keys.push(trimmedKey);
     }
   }
 
   logger.box(`BULK KEY CHECKER - Found ${keys.length} keys`);
 
-  const results = { valid: 0, invalid: 0, totalCredits: 0 };
+  const summary = { valid: 0, invalid: 0, totalCredits: 0 };
   const exportData = [];
 
   for (let i = 0; i < keys.length; i++) {
@@ -69,22 +80,19 @@ const main = async () => {
     logger.header(`[${i + 1}/${keys.length}] Checking Key (${providerType})`);
     const provider = createProvider(providerType, key);
 
-    // Mask Key for display — never expose full keys
     const maskedKey = `${key.slice(0, 8)}...${key.slice(-4)}`;
-
     const auth = await provider.checkAuth();
 
     if (auth.online) {
-      results.valid++;
+      summary.valid++;
       const balance = await provider.getBalance();
 
-      // Use the summary field if available, otherwise format credits
       let creditInfo = balance.summary || "N/A";
       if (!balance.summary && typeof balance.credits === "number") {
         creditInfo = formatCurrency(balance.credits);
       }
       if (typeof balance.credits === "number") {
-        results.totalCredits += balance.credits;
+        summary.totalCredits += balance.credits;
       }
 
       logger.success(
@@ -102,7 +110,7 @@ const main = async () => {
         isFreeTier: balance.isFreeTier ?? null,
       });
     } else {
-      results.invalid++;
+      summary.invalid++;
       logger.error(
         `INVALID: ${maskedKey} | Provider: ${providerType} | Error: ${auth.error}`,
       );
@@ -118,15 +126,14 @@ const main = async () => {
 
   logger.box("BULK SUMMARY");
   logger.info(`Total Keys Checked: ${keys.length}`);
-  logger.success(`Valid: ${results.valid}`);
-  logger.error(`Invalid: ${results.invalid}`);
-  if (results.totalCredits > 0) {
+  logger.success(`Valid: ${summary.valid}`);
+  logger.error(`Invalid: ${summary.invalid}`);
+  if (summary.totalCredits > 0) {
     logger.success(
-      `Total Account Credits Value: ${formatCurrency(results.totalCredits)}`,
+      `Total Account Credits Value: ${formatCurrency(summary.totalCredits)}`,
     );
   }
 
-  // Save bulk report
   const reportsDir = path.resolve("reports");
   if (!fs.existsSync(reportsDir)) fs.mkdirSync(reportsDir, { recursive: true });
   const reportPath = path.join(reportsDir, "bulk_report.json");
@@ -136,8 +143,8 @@ const main = async () => {
       {
         timestamp: new Date().toISOString(),
         totalChecked: keys.length,
-        valid: results.valid,
-        invalid: results.invalid,
+        valid: summary.valid,
+        invalid: summary.invalid,
         results: exportData,
       },
       null,

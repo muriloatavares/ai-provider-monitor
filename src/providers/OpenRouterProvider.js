@@ -1,3 +1,13 @@
+/**
+ * @file OpenRouterProvider.js
+ * @description Conector específico para a API do OpenRouter.
+ *
+ * Implementa autenticação, verificação de saldo e execução de testes
+ * de completamento (streaming e standard) via OpenRouter.
+ *
+ * @author Murilo A. Tavares (muriloatavares)
+ */
+
 import BaseProvider from "./BaseProvider.js";
 import config from "../config/env.js";
 import tokenTracker from "../utils/tokenTracker.js";

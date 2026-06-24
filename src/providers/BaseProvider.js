@@ -1,3 +1,14 @@
+/**
+ * @file BaseProvider.js
+ * @description Classe base abstrata para todos os conectores de API de LLMs.
+ *
+ * Fornece funcionalidades comuns como setup do cliente Axios (com retry),
+ * registro de latência/tokens e definições de métodos abstratos que as
+ * subclasses devem implementar.
+ *
+ * @author Murilo A. Tavares (muriloatavares)
+ */
+
 import axios from "axios";
 import axiosRetry from "axios-retry";
 import config from "../config/env.js";

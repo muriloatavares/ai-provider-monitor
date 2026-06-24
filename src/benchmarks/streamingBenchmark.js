@@ -1,5 +1,15 @@
 import fs from "fs";
 import path from "path";
+/**
+ * @file streamingBenchmark.js
+ * @description Serviço de benchmark específico para streaming de texto.
+ *
+ * Avalia o Time To First Token (TTFB) e a velocidade de geração
+ * (Tokens per Second) de diversos modelos em streaming.
+ *
+ * @author Murilo A. Tavares (muriloatavares)
+ */
+
 import axios from "axios";
 import { validateEnv } from "../config/env.js";
 import config from "../config/env.js";

@@ -1,3 +1,14 @@
+/**
+ * @file benchmark.js
+ * @description Motor principal de execução de testes de desempenho.
+ *
+ * Realiza testes de geração de texto (standard) com diferentes níveis
+ * de complexidade (light, medium) para calcular TTFB, latência e taxa
+ * de sucesso de cada provider.
+ *
+ * @author Murilo A. Tavares (muriloatavares)
+ */
+
 import { providers } from "../providers/index.js";
 
 export const runBenchmark = async () => {

@@ -1,3 +1,17 @@
+/**
+ * @file index.js
+ * @description Ponto de entrada principal do AI Providers Monitor (modo CLI).
+ *
+ * Fluxo de execução:
+ * 1. Valida variáveis de ambiente
+ * 2. Atualiza tabela de preços via PricingEngine
+ * 3. Inicia o servidor Express em background
+ * 4. Executa health checks, balance checks e benchmarks
+ * 5. Gera relatório final e exporta para reports/
+ *
+ * @author Murilo A. Tavares (muriloatavares)
+ */
+
 import { validateEnv } from "./config/env.js";
 import config from "./config/env.js";
 import logger from "./utils/logger.js";
@@ -10,21 +24,28 @@ import { startApi, updateApiState } from "./api.js";
 import tokenTracker from "./utils/tokenTracker.js";
 import { providers } from "./providers/index.js";
 import pricingEngine from "./services/pricingEngine.js";
+import { PROVIDER_ENV_KEYS } from "./constants/providers.js";
 
-// Map provider keys to their corresponding env config keys
-const providerKeyMap = {
-  openrouter: "OPENROUTER_API_KEY",
-  xai: "XAI_API_KEY",
-  groq: "GROQ_API_KEY",
-};
-
+/**
+ * Retorna os nomes dos providers que possuem API key configurada no .env.
+ *
+ * @returns {string[]} Lista de identificadores de providers ativos.
+ */
 const getActiveProviders = () => {
   return Object.keys(providers).filter((name) => {
-    const envKey = providerKeyMap[name];
+    const envKey = PROVIDER_ENV_KEYS[name];
     return envKey && config[envKey];
   });
 };
 
+/**
+ * Calcula o health score de um provider combinando status de autenticação
+ * e taxa de sucesso do benchmark (0-100).
+ *
+ * @param {object} auth - Resultado do health check.
+ * @param {object} benchmark - Resultado do benchmark.
+ * @returns {number} Score de 0 a 100.
+ */
 const calculateHealthScore = (auth, benchmark) => {
   let score = 0;
   if (auth.online) score += 20;
@@ -42,7 +63,6 @@ const main = async () => {
   logger.info("Initializing Pricing Engine...");
   await pricingEngine.updatePricing();
 
-  // Start Express API in background
   startApi();
   logger.info("Express API started in background on configured port.\n");
 
@@ -104,15 +124,14 @@ const main = async () => {
     }
   }
 
-  // Sorting ascending by latency
   benchmarkRanking.sort((a, b) => a.latency - b.latency);
 
   logger.box("BENCHMARK");
   for (let i = 0; i < benchmarkRanking.length; i++) {
-    const b = benchmarkRanking[i];
+    const entry = benchmarkRanking[i];
     const place = i === 0 ? "🏆 1º" : `${i + 1}º`;
     logger.info(
-      `${place} ${b.name.charAt(0).toUpperCase() + b.name.slice(1)} - Latência Média: ${formatMs(b.latency)}`,
+      `${place} ${entry.name.charAt(0).toUpperCase() + entry.name.slice(1)} - Latência Média: ${formatMs(entry.latency)}`,
     );
   }
 
@@ -124,7 +143,7 @@ const main = async () => {
     logger.warn(`\nWinner: None\n`);
   }
 
-  // Token Usage Report
+  // Relatório de uso de tokens
   logger.box("TOKEN USAGE");
   const grandTotal = tokenTracker.getGrandTotal();
 
@@ -151,10 +170,9 @@ const main = async () => {
     `Total Estimated Cost:   ${formatCurrency(grandTotal.totalCost)}`,
   );
 
-  // Inject token data into the final report
   finalReport.tokenUsage = tokenTracker.toJSON();
 
-  // Export JSON Reports
+  // Exporta relatórios JSON
   saveLatest(finalReport);
   saveBenchmark(benchmarkResults);
   saveHistory(finalReport);

@@ -1,4 +1,15 @@
+/**
+ * @file env.js
+ * @description Carrega e valida variáveis de ambiente da aplicação.
+ *
+ * Centraliza toda a configuração baseada em .env, incluindo
+ * API keys, modelos padrão, timeouts e porta do servidor.
+ *
+ * @author Murilo A. Tavares (muriloatavares)
+ */
+
 import dotenv from "dotenv";
+import logger from "../utils/logger.js";
 dotenv.config();
 
 const config = {
@@ -12,6 +23,10 @@ const config = {
   PORT: parseInt(process.env.PORT, 10) || 3000,
 };
 
+/**
+ * Valida as variáveis de ambiente obrigatórias e opcionais.
+ * Emite avisos para chaves ausentes sem interromper a execução.
+ */
 export const validateEnv = () => {
   const allKeys = [
     { name: "OPENROUTER_API_KEY", value: config.OPENROUTER_API_KEY },
@@ -23,18 +38,24 @@ export const validateEnv = () => {
   const present = allKeys.filter((k) => k.value).map((k) => k.name);
 
   if (present.length === 0) {
-    console.warn(
+    logger.warn(
       "No API keys configured in .env. Starting in Bulk Checker mode.",
     );
   }
 
   if (missing.length > 0) {
-    console.warn(
-      `⚠ Optional keys not set (those providers will be skipped): ${missing.join(", ")}`,
+    logger.warn(
+      `Optional keys not set (those providers will be skipped): ${missing.join(", ")}`,
     );
   }
 };
 
+/**
+ * Mascara uma API key para exibição segura.
+ *
+ * @param {string} key - Chave a mascarar.
+ * @returns {string} Chave mascarada (ex: "sk-o...xyz1").
+ */
 export const maskKey = (key) => {
   if (!key) return "N/A";
   if (key.length <= 8) return "*".repeat(key.length);

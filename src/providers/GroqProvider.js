@@ -1,3 +1,13 @@
+/**
+ * @file GroqProvider.js
+ * @description Conector específico para a API da Groq.
+ *
+ * Implementa autenticação, verificação de saldo e execução de testes
+ * de completamento utilizando inferência de alta velocidade da Groq.
+ *
+ * @author Murilo A. Tavares (muriloatavares)
+ */
+
 import BaseProvider from "./BaseProvider.js";
 import config from "../config/env.js";
 import tokenTracker from "../utils/tokenTracker.js";

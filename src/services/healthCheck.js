@@ -1,3 +1,12 @@
+/**
+ * @file healthCheck.js
+ * @description Serviço de verificação de integridade dos LLM providers.
+ *
+ * Itera sobre todos os providers configurados e tenta autenticação.
+ *
+ * @author Murilo A. Tavares (muriloatavares)
+ */
+
 import { providers } from "../providers/index.js";
 
 export const runHealthCheck = async () => {

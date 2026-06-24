@@ -1,3 +1,14 @@
+/**
+ * @file modelRanking.js
+ * @description Serviço de ranqueamento global de modelos LLM.
+ *
+ * Consome os dados de preços (pricingEngine) e latência
+ * (streamingBenchmark) para produzir um ranking ordenado
+ * dos melhores modelos considerando velocidade e custo.
+ *
+ * @author Murilo A. Tavares (muriloatavares)
+ */
+
 import fs from "fs";
 import path from "path";
 import logger from "../utils/logger.js";

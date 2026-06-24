@@ -1,3 +1,14 @@
+/**
+ * @file autoRouter.js
+ * @description Serviço de recomendação de modelos baseado em custo-benefício.
+ *
+ * Analisa latência histórica, custos do pricingEngine e janelas
+ * de contexto para sugerir o modelo LLM ideal (mais barato, mais rápido
+ * e melhor balanceado).
+ *
+ * @author Murilo A. Tavares (muriloatavares)
+ */
+
 import fs from "fs";
 import path from "path";
 import logger from "../utils/logger.js";

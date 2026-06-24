@@ -1,5 +1,9 @@
-import React from "react";
-
+/**
+ * @file SkeletonRow.jsx
+ * @description Componente de skeleton loading para linhas da tabela de chaves.
+ *
+ * @author Murilo A. Tavares (muriloatavares)
+ */
 export default function SkeletonRow() {
   return (
     <tr className="border-b border-[var(--border-primary)] bg-[var(--bg-card)]">

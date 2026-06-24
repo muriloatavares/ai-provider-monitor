@@ -1,7 +1,12 @@
 /**
- * TokenTracker - Acumulador global de uso de tokens.
- * Registra cada chamada feita por qualquer provider e mantém
- * totais por provider e um grand total da sessão.
+ * @file tokenTracker.js
+ * @description Acumulador global de uso de tokens e custos na sessão.
+ *
+ * Mantém um registro em memória de cada chamada de API feita, agrupando
+ * uso de tokens e calculando custos estimados via pricingEngine.
+ * Fornece dados vitais para os relatórios de uso.
+ *
+ * @author Murilo A. Tavares (muriloatavares)
  */
 
 import pricingEngine from "../services/pricingEngine.js";

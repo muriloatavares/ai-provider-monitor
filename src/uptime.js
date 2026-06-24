@@ -1,47 +1,74 @@
+/**
+ * @file uptime.js
+ * @description Monitor de disponibilidade contínua dos providers.
+ *
+ * Modos de operação:
+ * - Contínuo (padrão): pinga os providers em intervalo configurável
+ * - Single (--once): executa uma verificação e exibe dashboard
+ * - Status (--status): exibe dashboard sem pingar
+ *
+ * Persiste histórico em reports/uptime.json com janelas de 1h e 24h.
+ *
+ * @author Murilo A. Tavares (muriloatavares)
+ */
+
 import fs from "fs";
 import path from "path";
 import logger from "./utils/logger.js";
 import { validateEnv } from "./config/env.js";
 import config from "./config/env.js";
 import { providers } from "./providers/index.js";
+import { PROVIDER_ENV_KEYS } from "./constants/providers.js";
 
 const UPTIME_FILE = path.resolve("reports", "uptime.json");
-const INTERVAL_MS = parseInt(process.env.UPTIME_INTERVAL_MS, 10) || 60000; // Default: 1 min
+const INTERVAL_MS = parseInt(process.env.UPTIME_INTERVAL_MS, 10) || 60000;
 
-// Map provider keys to their corresponding env config keys
-const providerKeyMap = {
-  openrouter: "OPENROUTER_API_KEY",
-  xai: "XAI_API_KEY",
-  groq: "GROQ_API_KEY",
-};
-
+/**
+ * Retorna os providers que possuem API key configurada.
+ *
+ * @returns {string[]} Providers ativos.
+ */
 const getActiveProviders = () => {
   return Object.keys(providers).filter((name) => {
-    const envKey = providerKeyMap[name];
+    const envKey = PROVIDER_ENV_KEYS[name];
     return envKey && config[envKey];
   });
 };
 
-/** Load existing uptime history from disk */
+/**
+ * Carrega histórico de uptime do disco.
+ *
+ * @returns {object} Histórico existente ou objeto vazio.
+ */
 const loadHistory = () => {
   try {
     if (fs.existsSync(UPTIME_FILE)) {
       return JSON.parse(fs.readFileSync(UPTIME_FILE, "utf-8"));
     }
   } catch {
-    // Corrupted file — start fresh
+    logger.warn("Arquivo de uptime corrompido — iniciando histórico novo");
   }
   return {};
 };
 
-/** Save uptime history to disk */
+/**
+ * Persiste o histórico de uptime no disco.
+ *
+ * @param {object} history - Dados de uptime a salvar.
+ */
 const saveHistory = (history) => {
   const dir = path.dirname(UPTIME_FILE);
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
   fs.writeFileSync(UPTIME_FILE, JSON.stringify(history, null, 2));
 };
 
-/** Calculate uptime stats from check records */
+/**
+ * Calcula estatísticas de uptime a partir dos registros de verificação.
+ * Inclui janelas de 1h e 24h para análise temporal.
+ *
+ * @param {Array} checks - Lista de verificações com timestamp, online e latency.
+ * @returns {object} Estatísticas calculadas.
+ */
 const calculateStats = (checks) => {
   if (!checks || checks.length === 0) {
     return {
@@ -62,7 +89,6 @@ const calculateStats = (checks) => {
       ? latencies.reduce((a, b) => a + b, 0) / latencies.length
       : 0;
 
-  // Time-window based stats
   const now = Date.now();
   const last1h = checks.filter(
     (c) => now - new Date(c.timestamp).getTime() < 3600000,
@@ -94,7 +120,12 @@ const calculateStats = (checks) => {
   };
 };
 
-/** Run a single check cycle */
+/**
+ * Executa um ciclo de verificação para todos os providers ativos.
+ *
+ * @param {string[]} activeProviders - Lista de providers a verificar.
+ * @param {object} history - Histórico acumulado para atualização.
+ */
 const runCheck = async (activeProviders, history) => {
   const timestamp = new Date().toISOString();
 
@@ -126,15 +157,13 @@ const runCheck = async (activeProviders, history) => {
       error: error || null,
     });
 
-    // Keep only last 1440 checks (~24h at 1min interval) to avoid bloat
+    // Limita a 1440 registros (~24h no intervalo de 1min)
     if (history[name].checks.length > 1440) {
       history[name].checks = history[name].checks.slice(-1440);
     }
 
-    // Recalculate stats
     history[name].stats = calculateStats(history[name].checks);
 
-    // Log
     const statusIcon = online ? "🟢" : "🔴";
     const uptimeStr = history[name].stats.uptimePercent.toFixed(2);
     logger.info(
@@ -145,7 +174,24 @@ const runCheck = async (activeProviders, history) => {
   saveHistory(history);
 };
 
-/** Print summary dashboard */
+/**
+ * Gera uma barra visual de progresso para exibição no terminal.
+ *
+ * @param {number} percent - Percentual de 0 a 100.
+ * @returns {string} Barra formatada com 20 caracteres.
+ */
+const generateBar = (percent) => {
+  const filled = Math.round(percent / 5);
+  const empty = 20 - filled;
+  return `[${"█".repeat(filled)}${"░".repeat(empty)}]`;
+};
+
+/**
+ * Exibe o dashboard de uptime no terminal.
+ *
+ * @param {string[]} activeProviders - Providers para exibir.
+ * @param {object} history - Dados de uptime acumulados.
+ */
 const printDashboard = (activeProviders, history) => {
   logger.box("UPTIME DASHBOARD");
 
@@ -169,14 +215,6 @@ const printDashboard = (activeProviders, history) => {
   }
 };
 
-/** Generate a visual progress bar */
-const generateBar = (percent) => {
-  const filled = Math.round(percent / 5); // 20 chars = 100%
-  const empty = 20 - filled;
-  return `[${"█".repeat(filled)}${"░".repeat(empty)}]`;
-};
-
-/** Main */
 const main = async () => {
   validateEnv();
   const activeProviders = getActiveProviders();
@@ -190,7 +228,6 @@ const main = async () => {
   const history = loadHistory();
 
   if (mode === "--once" || mode === "-1") {
-    // Single check mode
     logger.box("UPTIME CHECK (Single)");
     await runCheck(activeProviders, history);
     printDashboard(activeProviders, history);
@@ -198,7 +235,6 @@ const main = async () => {
   }
 
   if (mode === "--status" || mode === "-s") {
-    // Just show current stats without pinging
     if (Object.keys(history).length === 0) {
       logger.warn(
         "No uptime data yet. Run a check first: npm run uptime -- --once",
@@ -209,15 +245,12 @@ const main = async () => {
     return;
   }
 
-  // Continuous monitoring mode
   logger.box(`UPTIME MONITOR (every ${INTERVAL_MS / 1000}s)`);
   logger.info(`Monitoring: ${activeProviders.join(", ")}`);
   logger.info("Press Ctrl+C to stop.\n");
 
-  // Run immediately
   await runCheck(activeProviders, history);
 
-  // Then repeat on interval
   setInterval(async () => {
     const freshHistory = loadHistory();
     await runCheck(activeProviders, freshHistory);

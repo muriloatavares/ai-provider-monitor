@@ -1,3 +1,12 @@
+/**
+ * @file Badges.jsx
+ * @description Componentes visuais para exibição de status, quotas e health score.
+ *
+ * Utiliza cores padronizadas baseadas em status (valid, invalid, rate_limited, etc).
+ *
+ * @author Murilo A. Tavares (muriloatavares)
+ */
+
 export function KeyStatusBadge({ status }) {
   const s = status?.toLowerCase();
 

@@ -1,3 +1,13 @@
+/**
+ * @file XaiProvider.js
+ * @description Conector específico para a API da xAI (Grok).
+ *
+ * Implementa autenticação e execução de testes de completamento
+ * utilizando os modelos desenvolvidos pela xAI.
+ *
+ * @author Murilo A. Tavares (muriloatavares)
+ */
+
 import BaseProvider from "./BaseProvider.js";
 import config from "../config/env.js";
 import tokenTracker from "../utils/tokenTracker.js";

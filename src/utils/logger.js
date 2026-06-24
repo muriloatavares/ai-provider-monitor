@@ -1,3 +1,13 @@
+/**
+ * @file logger.js
+ * @description Logger centralizado com formatação colorida para terminal.
+ *
+ * Provê métodos padronizados para info, success, warn, error, box e header.
+ * Utiliza chalk para colorização e deve ser o único canal de output da aplicação.
+ *
+ * @author Murilo A. Tavares (muriloatavares)
+ */
+
 import chalk from "chalk";
 
 const logger = {

@@ -1,3 +1,14 @@
+/**
+ * @file providerTracker.js
+ * @description Serviço de rastreamento histórico de performance.
+ *
+ * Mantém um arquivo JSON persistente com o histórico de latência
+ * e taxa de sucesso de cada provider para construção de gráficos
+ * analíticos no frontend.
+ *
+ * @author Murilo A. Tavares (muriloatavares)
+ */
+
 import fs from "fs";
 import path from "path";
 import logger from "../utils/logger.js";
@@ -17,8 +28,8 @@ class ProviderTracker {
         const data = JSON.parse(fs.readFileSync(REPORT_FILE, "utf-8"));
         this.history = data.history || [];
       }
-    } catch (e) {
-      // ignore
+    } catch (error) {
+      logger.error(`Falha ao ler o histórico de providers: ${error.message}`);
     }
   }
 
@@ -37,8 +48,10 @@ class ProviderTracker {
           2,
         ),
       );
-    } catch (e) {
-      logger.error(`Failed to save providers history: ${e.message}`);
+    } catch (error) {
+      logger.error(
+        `Falha ao salvar o histórico de providers: ${error.message}`,
+      );
     }
   }
 

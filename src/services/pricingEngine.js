@@ -1,3 +1,14 @@
+/**
+ * @file pricingEngine.js
+ * @description Motor de precificação dos modelos LLM.
+ *
+ * Baixa periodicamente a tabela oficial de preços do OpenRouter,
+ * unifica com preços estáticos de outros providers e provê métodos
+ * para calcular custos precisos baseados em tokens de prompt/completion.
+ *
+ * @author Murilo A. Tavares (muriloatavares)
+ */
+
 import fs from "fs";
 import path from "path";
 import axios from "axios";

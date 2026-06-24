@@ -1,4 +1,14 @@
-import { useState, useEffect } from 'react';
+/**
+ * @file useApi.js
+ * @description Hook genérico para consumo de endpoints REST.
+ *
+ * Gerencia estados de loading, data e error para chamadas GET simples.
+ * (O streaming é gerenciado separadamente pelo useKeyChecker).
+ *
+ * @author Murilo A. Tavares (muriloatavares)
+ */
+
+import { useState, useEffect } from "react";
 
 export function useApi(endpoint) {
   const [data, setData] = useState(null);

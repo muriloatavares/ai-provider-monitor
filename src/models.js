@@ -1,3 +1,18 @@
+/**
+ * @file models.js
+ * @description Listagem de modelos disponíveis por chave ou arquivo de chaves.
+ *
+ * Aceita uma chave diretamente ou um arquivo .txt com múltiplas chaves.
+ * Para arquivos, busca modelos apenas do primeiro key válido de cada
+ * provider (mesmo provider = mesmo catálogo de modelos).
+ *
+ * Uso:
+ *   npm run models -- <api-key>           (chave única)
+ *   npm run models -- <path-to-file.txt>  (arquivo com chaves)
+ *
+ * @author Murilo A. Tavares (muriloatavares)
+ */
+
 import fs from "fs";
 import path from "path";
 import readline from "readline";
@@ -5,19 +20,19 @@ import logger from "./utils/logger.js";
 import OpenRouterProvider from "./providers/OpenRouterProvider.js";
 import XaiProvider from "./providers/XaiProvider.js";
 import GroqProvider from "./providers/GroqProvider.js";
+import { detectProvider } from "./utils/keyDetector.js";
 
-// Accept a single key as argument, or a file path
-const arg = process.argv[2];
+const cliArgument = process.argv[2];
 
-const detectProvider = (key) => {
-  if (key.startsWith("sk-or-v1-")) return "openrouter";
-  if (key.startsWith("xai-")) return "xai";
-  if (key.startsWith("gsk_")) return "groq";
-  return "openrouter";
-};
-
-const createProvider = (type, key) => {
-  switch (type) {
+/**
+ * Instancia o provider correto com base no tipo detectado.
+ *
+ * @param {string} providerType - Tipo do provider.
+ * @param {string} key - API key.
+ * @returns {import('./providers/BaseProvider.js').default} Provider instanciado.
+ */
+const createProvider = (providerType, key) => {
+  switch (providerType) {
     case "openrouter":
       return new OpenRouterProvider(key);
     case "xai":
@@ -29,6 +44,12 @@ const createProvider = (type, key) => {
   }
 };
 
+/**
+ * Busca e exibe os modelos disponíveis para uma chave específica.
+ *
+ * @param {string} key - API key para consultar.
+ * @returns {Promise<object>} Resultado com chave mascarada, provider e lista de modelos.
+ */
 const fetchModels = async (key) => {
   const providerType = detectProvider(key);
   const provider = createProvider(providerType, key);
@@ -54,15 +75,13 @@ const fetchModels = async (key) => {
       context_length: m.context_length || m.context_window || null,
     }));
 
-    // Sort alphabetically by id
     modelList.sort((a, b) => a.id.localeCompare(b.id));
 
-    // Display as a clean table
     for (const model of modelList) {
-      const ctx = model.context_length
+      const contextInfo = model.context_length
         ? ` | ctx: ${model.context_length.toLocaleString()}`
         : "";
-      console.log(`  📦 ${model.id}${ctx}`);
+      console.log(`  📦 ${model.id}${contextInfo}`);
     }
 
     return { key: maskedKey, provider: providerType, models: modelList };
@@ -81,7 +100,7 @@ const fetchModels = async (key) => {
 };
 
 const main = async () => {
-  if (!arg) {
+  if (!cliArgument) {
     logger.error("Usage:");
     logger.info("  npm run models -- <api-key>           (single key)");
     logger.info("  npm run models -- <path-to-file.txt>  (one key per line)");
@@ -90,8 +109,7 @@ const main = async () => {
 
   const allResults = [];
 
-  // Check if the argument is a file
-  const filePath = path.resolve(arg);
+  const filePath = path.resolve(cliArgument);
   if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
     logger.box("MODEL LISTING (Bulk)");
     const fileStream = fs.createReadStream(filePath);
@@ -102,33 +120,31 @@ const main = async () => {
 
     const keys = [];
     for await (const line of rl) {
-      const key = line.trim();
-      if (key && !key.startsWith("#")) keys.push(key);
+      const trimmedKey = line.trim();
+      if (trimmedKey && !trimmedKey.startsWith("#")) keys.push(trimmedKey);
     }
 
-    // Only fetch models for the first valid key of each provider type
-    // (all keys of the same provider share the same model catalog)
-    const seen = new Set();
+    // Busca modelos apenas do primeiro key de cada provider
+    // (mesmo provider compartilha o mesmo catálogo)
+    const processedProviders = new Set();
     for (const key of keys) {
-      const type = detectProvider(key);
-      if (seen.has(type)) {
-        continue; // Same provider, same models — skip
+      const providerType = detectProvider(key);
+      if (processedProviders.has(providerType)) {
+        continue;
       }
 
       const result = await fetchModels(key);
       if (result.models.length > 0) {
-        seen.add(type);
+        processedProviders.add(providerType);
         allResults.push(result);
       }
     }
   } else {
-    // Single key mode
     logger.box("MODEL LISTING");
-    const result = await fetchModels(arg);
+    const result = await fetchModels(cliArgument);
     allResults.push(result);
   }
 
-  // Export
   const reportsDir = path.resolve("reports");
   if (!fs.existsSync(reportsDir)) fs.mkdirSync(reportsDir, { recursive: true });
   const reportPath = path.join(reportsDir, "models_report.json");

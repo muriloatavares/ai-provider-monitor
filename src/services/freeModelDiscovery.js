@@ -1,3 +1,13 @@
+/**
+ * @file freeModelDiscovery.js
+ * @description Serviço para descoberta e catalogação de modelos gratuitos.
+ *
+ * Filtra a tabela de preços para encontrar modelos com custo zero
+ * e armazena os resultados para consumo pela interface (Free Tier Finder).
+ *
+ * @author Murilo A. Tavares (muriloatavares)
+ */
+
 import fs from "fs";
 import path from "path";
 import axios from "axios";
