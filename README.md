@@ -1,5 +1,9 @@
 # AI Providers Monitor
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Node.js Version](https://img.shields.io/badge/node-%3E%3D%2020.0.0-brightgreen.svg)](https://nodejs.org)
+[![React](https://img.shields.io/badge/React-18-blue.svg)](https://reactjs.org/)
+
 Ferramenta profissional de observabilidade e diagnóstico para provedores de IA.  
 Possui um **Dashboard Web** elegante para validação em massa (Bulk Checker) de chaves, permitindo verificar conectividade, saldo, uso de rate limits e modelos disponíveis.
 
@@ -111,4 +115,4 @@ Quando você joga o arquivo na tela:
 
 ## Licença
 
-MIT
+Distribuído sob a licença **MIT**. Veja o arquivo [LICENSE](LICENSE) para mais informações e termos de uso.
