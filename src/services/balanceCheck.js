@@ -1,4 +1,4 @@
-import { providers } from '../providers/index.js';
+import { providers } from "../providers/index.js";
 
 export const runBalanceCheck = async () => {
   const results = {};

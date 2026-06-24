@@ -4,6 +4,6 @@ export const measureTime = async (fn) => {
   const end = performance.now();
   return {
     ...result,
-    totalLatency: end - start
+    totalLatency: end - start,
   };
 };

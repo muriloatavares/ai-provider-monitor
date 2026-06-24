@@ -1,23 +1,23 @@
-import { useEffect, useState } from 'react'
-import { Outlet } from 'react-router-dom'
-import { Activity, Sun, Moon } from 'lucide-react'
+import { useEffect, useState } from "react";
+import { Outlet } from "react-router-dom";
+import { Activity, Sun, Moon } from "lucide-react";
 
 export default function MainLayout() {
   const [theme, setTheme] = useState(() => {
-    return localStorage.getItem('theme') || 'dark';
+    return localStorage.getItem("theme") || "dark";
   });
 
   useEffect(() => {
-    if (theme === 'light') {
-      document.documentElement.classList.add('light');
+    if (theme === "light") {
+      document.documentElement.classList.add("light");
     } else {
-      document.documentElement.classList.remove('light');
+      document.documentElement.classList.remove("light");
     }
-    localStorage.setItem('theme', theme);
+    localStorage.setItem("theme", theme);
   }, [theme]);
 
   const toggleTheme = () => {
-    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+    setTheme((prev) => (prev === "dark" ? "light" : "dark"));
   };
 
   return (
@@ -33,12 +33,16 @@ export default function MainLayout() {
           </h1>
         </div>
         <div className="flex items-center gap-4">
-          <button 
+          <button
             onClick={toggleTheme}
             className="p-1.5 rounded-md text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
             title="Toggle theme"
           >
-            {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            {theme === "dark" ? (
+              <Sun className="w-4 h-4" />
+            ) : (
+              <Moon className="w-4 h-4" />
+            )}
           </button>
           <div className="text-[11px] uppercase tracking-widest text-[var(--text-secondary)] font-semibold border border-[var(--border-primary)] px-2 py-1 rounded">
             Production
@@ -53,5 +57,5 @@ export default function MainLayout() {
         </div>
       </main>
     </div>
-  )
+  );
 }

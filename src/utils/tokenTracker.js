@@ -4,7 +4,7 @@
  * totais por provider e um grand total da sessão.
  */
 
-import pricingEngine from '../services/pricingEngine.js';
+import pricingEngine from "../services/pricingEngine.js";
 
 class TokenTracker {
   constructor() {
@@ -17,21 +17,26 @@ class TokenTracker {
    */
   track(provider, model, promptType, usage = {}) {
     const promptTokens = usage.prompt_tokens || usage.promptTokens || 0;
-    const completionTokens = usage.completion_tokens || usage.completionTokens || 0;
+    const completionTokens =
+      usage.completion_tokens || usage.completionTokens || 0;
     const totalTokens = usage.total_tokens || usage.totalTokens || 0;
-    
+
     // Auto-calculates cost dynamically
-    const cost = pricingEngine.calculateCost(model, promptTokens, completionTokens);
+    const cost = pricingEngine.calculateCost(
+      model,
+      promptTokens,
+      completionTokens,
+    );
 
     const entry = {
       timestamp: new Date().toISOString(),
       provider,
-      model: model || 'unknown',
+      model: model || "unknown",
       promptType,
       promptTokens,
       completionTokens,
       totalTokens,
-      cost
+      cost,
     };
 
     this.records.push(entry);
@@ -43,7 +48,7 @@ class TokenTracker {
         promptTokens: 0,
         completionTokens: 0,
         totalTokens: 0,
-        totalCost: 0
+        totalCost: 0,
       };
     }
 
@@ -61,7 +66,11 @@ class TokenTracker {
 
   /** Retorna o grand total de toda a sessão */
   getGrandTotal() {
-    let calls = 0, promptTokens = 0, completionTokens = 0, totalTokens = 0, totalCost = 0;
+    let calls = 0,
+      promptTokens = 0,
+      completionTokens = 0,
+      totalTokens = 0,
+      totalCost = 0;
     for (const p of Object.values(this.totals)) {
       calls += p.calls;
       promptTokens += p.promptTokens;
@@ -82,7 +91,7 @@ class TokenTracker {
     return {
       grandTotal: this.getGrandTotal(),
       byProvider: this.totals,
-      records: this.records
+      records: this.records,
     };
   }
 }

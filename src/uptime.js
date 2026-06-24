@@ -1,22 +1,22 @@
-import fs from 'fs';
-import path from 'path';
-import logger from './utils/logger.js';
-import { validateEnv } from './config/env.js';
-import config from './config/env.js';
-import { providers } from './providers/index.js';
+import fs from "fs";
+import path from "path";
+import logger from "./utils/logger.js";
+import { validateEnv } from "./config/env.js";
+import config from "./config/env.js";
+import { providers } from "./providers/index.js";
 
-const UPTIME_FILE = path.resolve('reports', 'uptime.json');
+const UPTIME_FILE = path.resolve("reports", "uptime.json");
 const INTERVAL_MS = parseInt(process.env.UPTIME_INTERVAL_MS, 10) || 60000; // Default: 1 min
 
 // Map provider keys to their corresponding env config keys
 const providerKeyMap = {
-  openrouter: 'OPENROUTER_API_KEY',
-  xai: 'XAI_API_KEY',
-  groq: 'GROQ_API_KEY'
+  openrouter: "OPENROUTER_API_KEY",
+  xai: "XAI_API_KEY",
+  groq: "GROQ_API_KEY",
 };
 
 const getActiveProviders = () => {
-  return Object.keys(providers).filter(name => {
+  return Object.keys(providers).filter((name) => {
     const envKey = providerKeyMap[name];
     return envKey && config[envKey];
   });
@@ -26,7 +26,7 @@ const getActiveProviders = () => {
 const loadHistory = () => {
   try {
     if (fs.existsSync(UPTIME_FILE)) {
-      return JSON.parse(fs.readFileSync(UPTIME_FILE, 'utf-8'));
+      return JSON.parse(fs.readFileSync(UPTIME_FILE, "utf-8"));
     }
   } catch {
     // Corrupted file — start fresh
@@ -44,23 +44,42 @@ const saveHistory = (history) => {
 /** Calculate uptime stats from check records */
 const calculateStats = (checks) => {
   if (!checks || checks.length === 0) {
-    return { uptimePercent: 0, totalChecks: 0, successChecks: 0, failChecks: 0, avgLatency: 0 };
+    return {
+      uptimePercent: 0,
+      totalChecks: 0,
+      successChecks: 0,
+      failChecks: 0,
+      avgLatency: 0,
+    };
   }
 
   const total = checks.length;
-  const successes = checks.filter(c => c.online).length;
+  const successes = checks.filter((c) => c.online).length;
   const fails = total - successes;
-  const latencies = checks.filter(c => c.latency > 0).map(c => c.latency);
-  const avgLatency = latencies.length > 0 ? latencies.reduce((a, b) => a + b, 0) / latencies.length : 0;
+  const latencies = checks.filter((c) => c.latency > 0).map((c) => c.latency);
+  const avgLatency =
+    latencies.length > 0
+      ? latencies.reduce((a, b) => a + b, 0) / latencies.length
+      : 0;
 
   // Time-window based stats
   const now = Date.now();
-  const last1h = checks.filter(c => now - new Date(c.timestamp).getTime() < 3600000);
-  const last24h = checks.filter(c => now - new Date(c.timestamp).getTime() < 86400000);
+  const last1h = checks.filter(
+    (c) => now - new Date(c.timestamp).getTime() < 3600000,
+  );
+  const last24h = checks.filter(
+    (c) => now - new Date(c.timestamp).getTime() < 86400000,
+  );
 
   const uptimeAll = (successes / total) * 100;
-  const uptime1h = last1h.length > 0 ? (last1h.filter(c => c.online).length / last1h.length) * 100 : null;
-  const uptime24h = last24h.length > 0 ? (last24h.filter(c => c.online).length / last24h.length) * 100 : null;
+  const uptime1h =
+    last1h.length > 0
+      ? (last1h.filter((c) => c.online).length / last1h.length) * 100
+      : null;
+  const uptime24h =
+    last24h.length > 0
+      ? (last24h.filter((c) => c.online).length / last24h.length) * 100
+      : null;
 
   return {
     uptimePercent: parseFloat(uptimeAll.toFixed(2)),
@@ -71,7 +90,7 @@ const calculateStats = (checks) => {
     failChecks: fails,
     avgLatency: Math.round(avgLatency),
     firstCheck: checks[0]?.timestamp,
-    lastCheck: checks[checks.length - 1]?.timestamp
+    lastCheck: checks[checks.length - 1]?.timestamp,
   };
 };
 
@@ -104,7 +123,7 @@ const runCheck = async (activeProviders, history) => {
       timestamp,
       online,
       latency: Math.round(latency),
-      error: error || null
+      error: error || null,
     });
 
     // Keep only last 1440 checks (~24h at 1min interval) to avoid bloat
@@ -116,9 +135,11 @@ const runCheck = async (activeProviders, history) => {
     history[name].stats = calculateStats(history[name].checks);
 
     // Log
-    const statusIcon = online ? '🟢' : '🔴';
+    const statusIcon = online ? "🟢" : "🔴";
     const uptimeStr = history[name].stats.uptimePercent.toFixed(2);
-    logger.info(`${statusIcon} ${name.toUpperCase()} | Status: ${online ? 'UP' : 'DOWN'} | Latency: ${Math.round(latency)} ms | Uptime: ${uptimeStr}%`);
+    logger.info(
+      `${statusIcon} ${name.toUpperCase()} | Status: ${online ? "UP" : "DOWN"} | Latency: ${Math.round(latency)} ms | Uptime: ${uptimeStr}%`,
+    );
   }
 
   saveHistory(history);
@@ -126,7 +147,7 @@ const runCheck = async (activeProviders, history) => {
 
 /** Print summary dashboard */
 const printDashboard = (activeProviders, history) => {
-  logger.box('UPTIME DASHBOARD');
+  logger.box("UPTIME DASHBOARD");
 
   for (const name of activeProviders) {
     const data = history[name];
@@ -139,10 +160,12 @@ const printDashboard = (activeProviders, history) => {
     logger.info(`Uptime (all time): ${bar} ${s.uptimePercent}%`);
     if (s.uptime1h !== null) logger.info(`Uptime (1h):       ${s.uptime1h}%`);
     if (s.uptime24h !== null) logger.info(`Uptime (24h):      ${s.uptime24h}%`);
-    logger.info(`Total Checks:      ${s.totalChecks} (✔ ${s.successChecks} | ✖ ${s.failChecks})`);
+    logger.info(
+      `Total Checks:      ${s.totalChecks} (✔ ${s.successChecks} | ✖ ${s.failChecks})`,
+    );
     logger.info(`Avg Latency:       ${s.avgLatency} ms`);
-    logger.info(`Monitoring Since:  ${s.firstCheck || 'N/A'}`);
-    logger.info(`Last Check:        ${s.lastCheck || 'N/A'}`);
+    logger.info(`Monitoring Since:  ${s.firstCheck || "N/A"}`);
+    logger.info(`Last Check:        ${s.lastCheck || "N/A"}`);
   }
 };
 
@@ -150,7 +173,7 @@ const printDashboard = (activeProviders, history) => {
 const generateBar = (percent) => {
   const filled = Math.round(percent / 5); // 20 chars = 100%
   const empty = 20 - filled;
-  return `[${'█'.repeat(filled)}${'░'.repeat(empty)}]`;
+  return `[${"█".repeat(filled)}${"░".repeat(empty)}]`;
 };
 
 /** Main */
@@ -159,25 +182,27 @@ const main = async () => {
   const activeProviders = getActiveProviders();
 
   if (activeProviders.length === 0) {
-    logger.error('No providers configured. Set at least one API key in .env');
+    logger.error("No providers configured. Set at least one API key in .env");
     process.exit(1);
   }
 
   const mode = process.argv[2];
   const history = loadHistory();
 
-  if (mode === '--once' || mode === '-1') {
+  if (mode === "--once" || mode === "-1") {
     // Single check mode
-    logger.box('UPTIME CHECK (Single)');
+    logger.box("UPTIME CHECK (Single)");
     await runCheck(activeProviders, history);
     printDashboard(activeProviders, history);
     return;
   }
 
-  if (mode === '--status' || mode === '-s') {
+  if (mode === "--status" || mode === "-s") {
     // Just show current stats without pinging
     if (Object.keys(history).length === 0) {
-      logger.warn('No uptime data yet. Run a check first: npm run uptime -- --once');
+      logger.warn(
+        "No uptime data yet. Run a check first: npm run uptime -- --once",
+      );
       return;
     }
     printDashboard(activeProviders, history);
@@ -186,8 +211,8 @@ const main = async () => {
 
   // Continuous monitoring mode
   logger.box(`UPTIME MONITOR (every ${INTERVAL_MS / 1000}s)`);
-  logger.info(`Monitoring: ${activeProviders.join(', ')}`);
-  logger.info('Press Ctrl+C to stop.\n');
+  logger.info(`Monitoring: ${activeProviders.join(", ")}`);
+  logger.info("Press Ctrl+C to stop.\n");
 
   // Run immediately
   await runCheck(activeProviders, history);
@@ -199,7 +224,7 @@ const main = async () => {
   }, INTERVAL_MS);
 };
 
-main().catch(err => {
+main().catch((err) => {
   logger.error(err.message);
   process.exit(1);
 });

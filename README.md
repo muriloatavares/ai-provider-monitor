@@ -11,6 +11,8 @@ Possui um **Dashboard Web** elegante para validação em massa (Bulk Checker) de
 | **OpenAI** | `sk-proj-...` ou `sk-...` | Validação de Chave, Tokens/Requests Limite/Restantes e Lista de Modelos. |
 | **xAI (Grok)** | `xai-...` | Validação de Chave, Tokens/Requests Limite/Restantes e Lista de Modelos. |
 | **Groq** | `gsk_...` | Validação de Chave, Tokens/Requests Limite/Restantes e Lista de Modelos. |
+| **Anthropic** | `sk-ant-api03-...` | Validação Autenticada e Lista de Modelos Compatíveis. |
+| **Google Gemini** | `AIzaSy...` | Validação de Modelos via Google AI Studio. |
 
 A arquitetura é extensível — novos provedores podem ser adicionados no backend (`src/api.js`).
 
@@ -19,6 +21,7 @@ A arquitetura é extensível — novos provedores podem ser adicionados no backe
 - **Dashboard Moderno**: Interface Web (React/Vite) inspirada no design da Vercel (dark mode, minimalist).
 - **Drag & Drop Bulk Checker**: Arraste arquivos `.txt` contendo dezenas de chaves e veja o resultado de validação de todas em tempo real.
 - **Detecção Inteligente (Anti Falso-Positivo)**: Regex avançada reconhece chaves com segurança.
+- **Server-Sent Events (SSE)**: Feedback visual instantâneo do progresso de carregamento e validação assíncrona das chaves na tabela.
 - **Categorização Real de Status**:
   - 🟢 **Online**: Chave válida e com saldo.
   - 🟡 **Exhausted**: Chave válida, mas com limite de gastos estourado.
@@ -85,8 +88,17 @@ Arraste e solte um arquivo `.txt` contendo as chaves na área indicada. As chave
 │   ├── tailwind.config.js
 │   └── vite.config.js        # Config c/ Proxy p/ contornar CORS
 ├── package.json              # Dependências do Backend
+├── deploy.bat                # Pipeline de Deploy Automatizado CI/CD
 └── README.md
 ```
+
+## Pipeline de Automação (deploy.bat)
+
+O repositório possui um utilitário nativo de Deploy projetado para agilizar a vida do desenvolvedor. Executando o arquivo `deploy.bat`, ele automatiza o fluxo inteiro do Git com qualidade Enterprise:
+1. **Auto-Format**: Roda `Prettier` em todo o código instantaneamente.
+2. **Conventional Commits**: Pergunta através de um menu (feat, fix, docs, config) e formata a tag do commit com escopo.
+3. **Semantic Versioning**: Permite fazer *Bump* (Patch, Minor, Major) alterando o seu `package.json` sozinho.
+4. **Segurança Integrada**: Tem suporte dinâmico de branch atual e rollback automático (`git reset --soft`) se o envio falhar.
 
 ## Como o Bulk Checker funciona?
 
