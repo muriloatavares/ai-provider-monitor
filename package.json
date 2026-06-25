@@ -1,6 +1,6 @@
 {
   "name": "ai-providers-monitor",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Professional tool to monitor and diagnose AI providers",
   "main": "src/index.js",
   "type": "module",
